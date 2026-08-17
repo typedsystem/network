@@ -1,2 +1,3 @@
 declare -gA PY_LIB 2>/dev/null || true
+PY_LIB["utils"]="lib:typedsystem/utils,provider:github,version:latest"
 PY_LIB["typed"]="lib:typedsystem/typed,provider:github,version:latest"

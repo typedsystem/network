@@ -1,16 +1,6 @@
-import re
-
 def _is_ssh_key_format(entity, kind=None):
-    valid_kinds = [
-        "ssh-rsa",
-        "ssh-dss",
-        "ecdsa-sha2-nistp256",
-        "ecdsa-sha2-nistp384",
-        "ecdsa-sha2-nistp521",
-        "sk-ecdsa-sha2-nistp256@openssh.com",
-        "ssh-ed25519",
-        "sk-ssh-ed25519@openssh.com"
-    ]
+    import re
+    from network.mods.ssh.types import SSHKeyKinds
 
     if kind:
         if not kind.startswith("ssh-") and not kind.startswith("ecdsa-") and not kind.startswith("sk-"):
@@ -27,12 +17,11 @@ def _is_ssh_key_format(entity, kind=None):
                 type_regex = re.escape(kind)
         else:
             type_regex = re.escape(kind.lower())
-
-        if kind.lower() not in [t.lower().replace("ssh-", "").replace("-sha2-nistp", "").replace("@openssh.com","") for t in valid_kinds] and \
-           kind.lower() not in [t.lower() for t in valid_kinds]:
+        if kind.lower() not in [t.lower().replace("ssh-", "").replace("-sha2-nistp", "").replace("@openssh.com","") for t in SSHKeyKinds] and \
+           kind.lower() not in [t.lower() for t in SSHKeyKinds]:
             pass
     else:
-        type_regex = r"|".join([re.escape(t) for t in valid_kinds])
+        type_regex = r"|".join([re.escape(t) for t in SSHKeyKinds])
         type_regex = f"(?:{type_regex})"
 
     base64_pattern = r"[A-Za-z0-9+/]+={0,2}"
@@ -59,7 +48,8 @@ def _is_ssh_key_format(entity, kind=None):
             return False
     return bool(match)
 
-def _is_ssh_key(entity, kind, private):
+def _is_ssh_key(entity, kind=None, private=False):
+    import re
     if not isinstance(entity, str) or not entity.strip():
         return False
 
@@ -103,3 +93,13 @@ def _is_ssh_key(entity, kind, private):
             return bool(pem_any_private_pattern.search(entity))
     else:
         return _is_ssh_key_format(entity, kind)
+
+def _is_ssh_key_file(entity: str) -> bool:
+    from utils import require
+    require.path.isfile(entity)
+    from typed import term
+    from utils.path import File
+
+    content = term(entity, File).read()
+    return _is_ssh_key(content)
+

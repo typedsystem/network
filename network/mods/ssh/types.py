@@ -1,4 +1,6 @@
-from typed import Values
+from typed import Values, Str
+from utils.path import File
+from network.mods.ssh.meta import SSH_KEY, SSH_KEY_FILE
 
 SSHKeyKinds = Values(
     "ssh-rsa",
@@ -11,4 +13,10 @@ SSHKeyKinds = Values(
     "sk-ssh-ed25519@openssh.com"
 )
 
+class SSHKey(Str, metaclass=SSH_KEY):
+    __display__ = "SSHKey"
+    __null__ = ""
 
+class SSHKeyFile(File, metaclass=SSH_KEY_FILE):
+    __display__ = "SSHKeyFile"
+    __null__ = ""
